@@ -6,19 +6,15 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 /*
-====================================
  MongoDB Atlas connection string
  ЗАМЕНИ <username>, <password>, <cluster>
-====================================
 */
 const MONGO_URI = process.env.MONGO_URI;
 const DB_NAME = "shop";
 let db;
 
 /*
-====================================
  Middleware
-====================================
 */
 
 // JSON body parser
@@ -32,9 +28,7 @@ app.use((req, res, next) => {
 });
 
 /*
-====================================
  MongoDB Connection
-====================================
 */
 MongoClient.connect(MONGO_URI)
   .then(client => {
@@ -46,9 +40,7 @@ MongoClient.connect(MONGO_URI)
   });
 
 /*
-====================================
  Routes
-====================================
 */
 
 // GET /
@@ -62,10 +54,17 @@ app.get("/", (req, res) => {
   `);
 });
 
+// GET /version
+app.get("/version", (req, res) => {
+  res.json({
+    version: "1.1",
+    updatedAt: "2026-01-18"
+  });
+});
+
+
 /*
-------------------------------------
  GET /api/products
-------------------------------------
 */
 app.get("/api/products", async (req, res) => {
   try {
@@ -192,18 +191,14 @@ app.get("/add-product-form", (req, res) => {
 });
 
 /*
-====================================
  404 Handler
-====================================
 */
 app.use((req, res) => {
   res.status(404).json({ error: "API endpoint not found" });
 });
 
 /*
-====================================
  Server start
-====================================
 */
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);

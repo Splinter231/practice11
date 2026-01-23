@@ -48,3 +48,69 @@ Content-Type: application/json
 
 ### UNKNOWN route (404 handler)
 GET http://localhost:3000/api/unknown
+
+
+
+### GET root page
+GET https://practice11-qo1m.onrender.com/
+
+
+### GET all products
+GET https://practice11-qo1m.onrender.com/api/products
+
+
+### GET product by ID 
+GET https://practice11-qo1m.onrender.com/api/products/69733d3ec2a881a7967f07e2
+
+
+### GET product by ID (INVALID → 400)
+GET https://practice11-qo1m.onrender.com/api/products/123
+
+
+### GET product by ID (NOT FOUND → 404)
+GET https://practice11-qo1m.onrender.com/api/products/aaaaaaaaaaaaaaaaaaaaaaaa
+
+
+### POST create product (SUCCESS → 201)
+POST https://practice11-qo1m.onrender.com/api/products
+Content-Type: application/json
+
+{
+  "name": "Production Test Product",
+  "price": 1500,
+  "category": "Electronics"
+}
+
+
+### POST create product (MISSING FIELD → 400)
+POST https://practice11-qo1m.onrender.com/api/products
+Content-Type: application/json
+
+{
+  "name": "Invalid Product",
+  "price": 500
+}
+
+
+### FILTER by category
+GET https://practice11-qo1m.onrender.com/api/products?category=Electronics
+
+
+### FILTER by minimum price
+GET https://practice11-qo1m.onrender.com/api/products?minPrice=1000
+
+
+### SORT by price (ascending)
+GET https://practice11-qo1m.onrender.com/api/products?sort=price
+
+
+### PROJECTION (only name and price)
+GET https://practice11-qo1m.onrender.com/api/products?fields=name,price
+
+
+### FILTER + SORT + PROJECTION
+GET https://practice11-qo1m.onrender.com/api/products?category=Electronics&minPrice=1000&sort=price&fields=name,price
+
+
+### UNKNOWN route (404 handler)
+GET https://practice11-qo1m.onrender.com/api/unknown
