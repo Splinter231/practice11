@@ -7,7 +7,6 @@ const PORT = process.env.PORT || 3000;
 
 /*
  MongoDB Atlas connection string
- ЗАМЕНИ <username>, <password>, <cluster>
 */
 const MONGO_URI = process.env.MONGO_URI;
 const DB_NAME = "shop";
@@ -116,9 +115,7 @@ app.get("/api/products", async (req, res) => {
 
 
 /*
-------------------------------------
  GET /api/products/:id
-------------------------------------
 */
 app.get("/api/products/:id", async (req, res) => {
   const { id } = req.params;
@@ -144,9 +141,7 @@ app.get("/api/products/:id", async (req, res) => {
 });
 
 /*
-------------------------------------
  POST /api/products
-------------------------------------
 */
 app.post("/api/products", async (req, res) => {
   const { name, price, category } = req.body;
@@ -190,6 +185,162 @@ app.get("/add-product-form", (req, res) => {
   `);
 });
 
+// ✅ GET all items
+app.get("/api/items", async (req, res) => {
+  try {
+    const items = await db.collection("items").find().toArray();
+
+    res.status(200).json({
+      count: items.length,
+      items: items
+    });
+  } catch (error) {
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+// ✅ GET item by ID
+app.get("/api/items/:id", async (req, res) => {
+  const { id } = req.params;
+
+  // Invalid ObjectId
+  if (!ObjectId.isValid(id)) {
+    return res.status(400).json({ error: "Invalid item ID" });
+  }
+
+  try {
+    const item = await db
+      .collection("items")
+      .findOne({ _id: new ObjectId(id) });
+
+    if (!item) {
+      return res.status(404).json({ error: "Item not found" });
+    }
+
+    res.status(200).json(item);
+  } catch (error) {
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+
+// ✅ POST create new item
+app.post("/api/items", async (req, res) => {
+  const { name, description } = req.body;
+
+  // Validation
+  if (!name || !description) {
+    return res.status(400).json({
+      error: "Missing required fields: name, description"
+    });
+  }
+
+  const newItem = {
+    name,
+    description
+  };
+
+  try {
+    const result = await db.collection("items").insertOne(newItem);
+
+    res.status(201).json({
+      message: "Item created",
+      id: result.insertedId
+    });
+  } catch (error) {
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+
+// ✅ PUT full update (replace all fields)
+app.put("/api/items/:id", async (req, res) => {
+  const { id } = req.params;
+  const { name, description } = req.body;
+
+  if (!ObjectId.isValid(id)) {
+    return res.status(400).json({ error: "Invalid item ID" });
+  }
+
+  // PUT требует ВСЕ поля
+  if (!name || !description) {
+    return res.status(400).json({
+      error: "PUT requires full item data: name, description"
+    });
+  }
+
+  try {
+    const result = await db.collection("items").updateOne(
+      { _id: new ObjectId(id) },
+      { $set: { name, description } }
+    );
+
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ error: "Item not found" });
+    }
+
+    res.status(200).json({ message: "Item fully updated" });
+  } catch (error) {
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+
+// ✅ PATCH partial update (only provided fields)
+app.patch("/api/items/:id", async (req, res) => {
+  const { id } = req.params;
+
+  if (!ObjectId.isValid(id)) {
+    return res.status(400).json({ error: "Invalid item ID" });
+  }
+
+  const updates = req.body;
+
+  // PATCH должен получать хотя бы одно поле
+  if (!updates || Object.keys(updates).length === 0) {
+    return res.status(400).json({ error: "No fields provided for update" });
+  }
+
+  try {
+    const result = await db.collection("items").updateOne(
+      { _id: new ObjectId(id) },
+      { $set: updates }
+    );
+
+    if (result.matchedCount === 0) {
+      return res.status(404).json({ error: "Item not found" });
+    }
+
+    res.status(200).json({ message: "Item partially updated" });
+  } catch (error) {
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+
+// ✅ DELETE item
+app.delete("/api/items/:id", async (req, res) => {
+  const { id } = req.params;
+
+  if (!ObjectId.isValid(id)) {
+    return res.status(400).json({ error: "Invalid item ID" });
+  }
+
+  try {
+    const result = await db.collection("items").deleteOne({
+      _id: new ObjectId(id)
+    });
+
+    if (result.deletedCount === 0) {
+      return res.status(404).json({ error: "Item not found" });
+    }
+
+    // 204 = No Content
+    res.status(204).send();
+  } catch (error) {
+    res.status(500).json({ error: "Server error" });
+  }
+});
 /*
  404 Handler
 */

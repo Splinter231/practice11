@@ -114,3 +114,7 @@ GET https://practice11-qo1m.onrender.com/api/products?category=Electronics&minPr
 
 ### UNKNOWN route (404 handler)
 GET https://practice11-qo1m.onrender.com/api/unknown
+
+
+### UNKNOWN route (404 handler)
+GET https://practice11-qo1m.onrender.com/version
