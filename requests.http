@@ -118,3 +118,245 @@ GET https://practice11-qo1m.onrender.com/api/unknown
 
 ### UNKNOWN route (404 handler)
 GET https://practice11-qo1m.onrender.com/version
+
+
+
+### =========================
+### Practice Task 13 — Items REST API
+### Base URL: Production (Render)
+### =========================
+
+
+### GET all items (should return empty array first)
+GET https://practice11-qo1m.onrender.com/api/items
+
+###
+
+
+### POST create new item (SUCCESS → 201)
+POST https://practice11-qo1m.onrender.com/api/items
+Content-Type: application/json
+
+{
+  "name": "Item One",
+  "description": "First test item"
+}
+
+###
+
+
+### POST create item (MISSING FIELD → 400)
+POST https://practice11-qo1m.onrender.com/api/items
+Content-Type: application/json
+
+{
+  "name": "Invalid Item"
+}
+
+###
+
+
+### GET item by ID (REPLACE with real ID from POST response)
+GET https://practice11-qo1m.onrender.com/api/items/697b6fe186c39b526aff478e
+###
+
+
+### GET item by ID (INVALID → 400)
+GET https://practice11-qo1m.onrender.com/api/items/123
+
+###
+
+
+### GET item by ID (NOT FOUND → 404)
+GET https://practice11-qo1m.onrender.com/api/items/aaaaaaaaaaaaaaaaaaaaaaaa
+
+###
+
+
+### PUT full update item (SUCCESS → 200)
+PUT https://practice11-qo1m.onrender.com/api/items/697b6fe186c39b526aff478e
+Content-Type: application/json
+
+{
+  "name": "Updated Item",
+  "description": "This item was fully updated using PUT"
+}
+
+###
+
+
+### PUT full update (MISSING FIELD → 400)
+PUT https://practice11-qo1m.onrender.com/api/items/697b6fe186c39b526aff478e
+Content-Type: application/json
+
+{
+  "name": "Only Name"
+}
+
+###
+
+
+### PATCH partial update (SUCCESS → 200)
+PATCH https://practice11-qo1m.onrender.com/api/items/697b6fe186c39b526aff478e
+Content-Type: application/json
+
+{
+  "description": "Only description changed using PATCH"
+}
+
+###
+
+
+### PATCH update (EMPTY BODY → 400)
+PATCH https://practice11-qo1m.onrender.com/api/items/697b6fe186c39b526aff478e
+Content-Type: application/json
+
+{
+}
+
+###
+
+
+### DELETE item (SUCCESS → 204 No Content)
+DELETE https://practice11-qo1m.onrender.com/api/items/697b6fe186c39b526aff478e
+
+###
+
+
+### DELETE item again (NOT FOUND → 404)
+DELETE https://practice11-qo1m.onrender.com/api/items/697b6fe186c39b526aff478e
+
+###
+
+
+### UNKNOWN route (404 handler)
+GET https://practice11-qo1m.onrender.com/api/unknown
+
+
+
+
+
+
+
+### =========================================
+### Practice Task 14 — API Key Protection Test
+### Base URL (Render Production)
+### =========================================
+
+@baseUrl = https://practice11-qo1m.onrender.com
+@apiKey = supersecret123
+
+
+### GET all items (PUBLIC → 200)
+GET {{baseUrl}}/api/items
+
+###
+
+
+### GET item by ID (PUBLIC → 200)
+GET {{baseUrl}}/api/items/PUT_ID_HERE
+
+###
+
+
+### POST create item (NO KEY → 401 Unauthorized)
+POST {{baseUrl}}/api/items
+Content-Type: application/json
+
+{
+  "name": "Unauthorized Item",
+  "description": "This request should fail"
+}
+
+###
+
+
+### POST create item (WRONG KEY → 403 Forbidden)
+POST {{baseUrl}}/api/items
+Content-Type: application/json
+x-api-key: wrongkey
+
+{
+  "name": "Wrong Key Item",
+  "description": "This request should be forbidden"
+}
+
+###
+
+
+### POST create item (VALID KEY → 201 Created)
+POST {{baseUrl}}/api/items
+Content-Type: application/json
+x-api-key: {{apiKey}}
+
+{
+  "name": "Authorized Item",
+  "description": "This request should succeed"
+}
+
+###
+
+
+### PUT full update (NO KEY → 401)
+PUT {{baseUrl}}/api/items/PUT_ID_HERE
+Content-Type: application/json
+
+{
+  "name": "Updated Name",
+  "description": "Should fail without key"
+}
+
+###
+
+
+### PUT full update (VALID KEY → 200)
+PUT {{baseUrl}}/api/items/PUT_ID_HERE
+Content-Type: application/json
+x-api-key: {{apiKey}}
+
+{
+  "name": "Updated Item",
+  "description": "This item was fully updated with PUT"
+}
+
+###
+
+
+### PATCH partial update (NO KEY → 401)
+PATCH {{baseUrl}}/api/items/PUT_ID_HERE
+Content-Type: application/json
+
+{
+  "description": "Should fail without key"
+}
+
+###
+
+
+### PATCH partial update (VALID KEY → 200)
+PATCH {{baseUrl}}/api/items/PUT_ID_HERE
+Content-Type: application/json
+x-api-key: {{apiKey}}
+
+{
+  "description": "This field was updated with PATCH"
+}
+
+###
+
+
+### DELETE item (NO KEY → 401)
+DELETE {{baseUrl}}/api/items/PUT_ID_HERE
+
+###
+
+
+### DELETE item (VALID KEY → 204 No Content)
+DELETE {{baseUrl}}/api/items/PUT_ID_HERE
+x-api-key: {{apiKey}}
+
+###
+
+
+### UNKNOWN route (404 handler)
+GET {{baseUrl}}/api/unknown

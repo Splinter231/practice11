@@ -18,6 +18,28 @@ let db;
 
 // JSON body parser
 app.use(express.json());
+// API Key Protection Middleware
+const apiKeyMiddleware = (req, res, next) => {
+  const clientKey = req.headers["x-api-key"];
+  const serverKey = process.env.API_KEY;
+
+  // Missing key → Unauthorized
+  if (!clientKey) {
+    return res.status(401).json({
+      error: "Unauthorized: API key missing"
+    });
+  }
+
+  // Wrong key → Forbidden
+  if (clientKey !== serverKey) {
+    return res.status(403).json({
+      error: "Forbidden: Invalid API key"
+    });
+  }
+
+  // Key is valid → continue
+  next();
+};
 app.use(express.urlencoded({ extended: true }));
 
 // Logger middleware (method + URL)
@@ -185,7 +207,7 @@ app.get("/add-product-form", (req, res) => {
   `);
 });
 
-// ✅ GET all items
+// GET all items
 app.get("/api/items", async (req, res) => {
   try {
     const items = await db.collection("items").find().toArray();
@@ -199,7 +221,7 @@ app.get("/api/items", async (req, res) => {
   }
 });
 
-// ✅ GET item by ID
+// GET item by ID
 app.get("/api/items/:id", async (req, res) => {
   const { id } = req.params;
 
@@ -223,9 +245,8 @@ app.get("/api/items/:id", async (req, res) => {
   }
 });
 
-
-// ✅ POST create new item
-app.post("/api/items", async (req, res) => {
+// POST create new item
+app.post("/api/items", apiKeyMiddleware, async (req, res) => {
   const { name, description } = req.body;
 
   // Validation
@@ -253,8 +274,8 @@ app.post("/api/items", async (req, res) => {
 });
 
 
-// ✅ PUT full update (replace all fields)
-app.put("/api/items/:id", async (req, res) => {
+// PUT full update (replace all fields)
+app.put("/api/items/:id", apiKeyMiddleware, async (req, res) => {
   const { id } = req.params;
   const { name, description } = req.body;
 
@@ -262,7 +283,7 @@ app.put("/api/items/:id", async (req, res) => {
     return res.status(400).json({ error: "Invalid item ID" });
   }
 
-  // PUT требует ВСЕ поля
+  // PUT 
   if (!name || !description) {
     return res.status(400).json({
       error: "PUT requires full item data: name, description"
@@ -286,8 +307,8 @@ app.put("/api/items/:id", async (req, res) => {
 });
 
 
-// ✅ PATCH partial update (only provided fields)
-app.patch("/api/items/:id", async (req, res) => {
+// PATCH partial update (only provided fields)
+app.patch("/api/items/:id", apiKeyMiddleware, async (req, res) => {
   const { id } = req.params;
 
   if (!ObjectId.isValid(id)) {
@@ -296,7 +317,7 @@ app.patch("/api/items/:id", async (req, res) => {
 
   const updates = req.body;
 
-  // PATCH должен получать хотя бы одно поле
+  // PATCH 
   if (!updates || Object.keys(updates).length === 0) {
     return res.status(400).json({ error: "No fields provided for update" });
   }
@@ -318,8 +339,8 @@ app.patch("/api/items/:id", async (req, res) => {
 });
 
 
-// ✅ DELETE item
-app.delete("/api/items/:id", async (req, res) => {
+// DELETE item
+app.delete("/api/items/:id", apiKeyMiddleware, async (req, res) => {
   const { id } = req.params;
 
   if (!ObjectId.isValid(id)) {
